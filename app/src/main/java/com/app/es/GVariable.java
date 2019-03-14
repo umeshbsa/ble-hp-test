@@ -22,7 +22,7 @@ public class GVariable {
     public static int gradient = 0;
     public static int heartRate = 0;
     public static boolean isConnected = false;
-    public static boolean isInPlayer = false;
+    public static boolean isInPlayer = true;
     public static boolean isReceiveSpeed = false;
     public static boolean isStart = false;
     public static boolean isUpload = false;

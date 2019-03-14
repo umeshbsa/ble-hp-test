@@ -33,6 +33,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Timer;
 
 public class PlayActivity extends Activity implements OnClickListener {
     private static final String TAG = "PlayActivity";
@@ -91,6 +92,7 @@ public class PlayActivity extends Activity implements OnClickListener {
         GVariable.isInPlayer = true;
         setContentView(R.layout.activity_play);
 
+        new Timer().schedule(new RefreshDataTask(this), 50, 1000);
 
         System.gc();
         //  PhotoUtil.setBackground(this);

@@ -2,6 +2,7 @@ package com.app.es;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -31,12 +32,15 @@ public class RefreshDataTask extends TimerTask {
     }
 
     public void run() {
+
+        String minute = "00:00";
+        String second = "00";
+        String distance = "0";
+        String heat = "0";
+        int curChartIndex = 0;
+
         if (GVariable.isStart) {
-            String minute = "00:00";
-            String second = "00";
-            String distance = "0";
-            String heat = "0";
-            int curChartIndex = 0;
+
             switch (MODE) {
                 case 0:
                     minute = PlayUtil.formateMinute(mCountSecond);
@@ -119,12 +123,18 @@ public class RefreshDataTask extends TimerTask {
             }
             countData();
             sendData(minute, second, distance, heat, curChartIndex);
+
+            Log.i("EEEEEEEEEEEEEEE", "Mode : " + MODE + " : " + minute + " : " + second + " : " + distance + " : " + heat);
+
             return;
         }
         this.stepTime = 0;
         this.stepSpeed = 0;
         this.stepSlope = 0;
         this.stepRunedTime = 0;
+
+
+
     }
 
     private void countData() {
