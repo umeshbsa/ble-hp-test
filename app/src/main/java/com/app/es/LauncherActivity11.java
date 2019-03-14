@@ -211,11 +211,4 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
                 return;
         }
     }
-
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        if (event.getKeyCode() == 4) {
-            return true;
-        }
-        return super.dispatchKeyEvent(event);
-    }
 }
