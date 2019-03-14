@@ -14,7 +14,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
@@ -25,31 +24,22 @@ import com.hankang.phone.treadmill.R;
 public class LauncherActivity11 extends Activity implements OnClickListener {
     private static final String TAG = "LauncherActivity11";
     private Handler handler;
-    private Handler handlerbg;
     private BTBroadcastReceiver mBTReceiver;
     private BluetoothAdapter mBluetoothAdapter;
-    private final ServiceConnection mServiceConnection = new C01561();
-    private Runnable runnablebg;
     private Runnable runnableer;
 
-    /* renamed from: com.hankang.phone.treadmill.activity.LauncherActivity11$1 */
-    class C01561 implements ServiceConnection {
-        C01561() {
-        }
-
+    ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             GVariable.bluetoothLeService = ((BluetoothTreadmillService.LocalBinder) service).getService();
             if (GVariable.bluetoothLeService.initialize()) {
                 GVariable.bluetoothLeService.connect(GVariable.treadmillDevice);
                 return;
             }
-            Log.e(LauncherActivity11.TAG, "蓝牙初始化失败");
-            Toast.makeText(LauncherActivity11.this.getApplicationContext(), R.string.failinitble, 1).show();
         }
 
         public void onServiceDisconnected(ComponentName componentName) {
         }
-    }
+    };
 
     /* renamed from: com.hankang.phone.treadmill.activity.LauncherActivity11$3 */
     class C01583 implements Runnable {
@@ -139,13 +129,6 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
         final ImageView imageView = (ImageView) findViewById(R.id.launcher_image);
         imageView.setImageResource(R.drawable.launcher_image1);
         ((ImageView) findViewById(R.id.launcher_imagee)).setOnClickListener(this);
-        this.handlerbg = new Handler();
-        this.runnablebg = new Runnable() {
-            public void run() {
-                imageView.setImageResource(R.drawable.launcher_image2);
-            }
-        };
-        this.handlerbg.postDelayed(this.runnablebg, 2000);
         this.handler = new Handler();
         this.runnableer = new C01583();
         this.handler.postDelayed(this.runnableer, 3000);
@@ -174,11 +157,10 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
 
     private void initTreadmillBlueTooth() {
         if (!getPackageManager().hasSystemFeature("android.hardware.bluetooth_le")) {
-            Toast.makeText(this, R.string.supportble, 0).show();
+            Toast.makeText(this, R.string.supportble, Toast.LENGTH_LONG).show();
             finish();
         }
         this.mBluetoothAdapter = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter();
-        if (this.mBluetoothAdapter.getState() == 12) {
             String device = PreferenceUtil.getString(this, PreferenceUtil.KEY_DEVICE_TREADMILL, "");
             LogUtil.m296w(TAG, "initTreadmillBlueTooth", "device=" + device);
             if (TextUtils.isEmpty(device)) {
@@ -187,8 +169,6 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
             }
             GVariable.treadmillDevice = device;
             initBleService();
-            return;
-        }
         new Handler().post(new C01605());
     }
 
@@ -198,7 +178,7 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
     }
 
     private void initBleService() {
-        Log.w(TAG, "Try to bindService=" + bindService(new Intent(this, BluetoothTreadmillService.class), this.mServiceConnection, 1));
+        Log.w(TAG, "Try to bindService=" + bindService(new Intent(this, BluetoothTreadmillService.class), this.mServiceConnection, Context.BIND_AUTO_CREATE));
     }
 
     public void onClick(View v) {
