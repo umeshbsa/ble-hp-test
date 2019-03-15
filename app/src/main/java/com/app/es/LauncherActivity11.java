@@ -26,13 +26,23 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
     private Handler handler;
     private BTBroadcastReceiver mBTReceiver;
     private BluetoothAdapter mBluetoothAdapter;
-    private Runnable runnableer;
+    // private Runnable runnableer;
 
     ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             GVariable.bluetoothLeService = ((BluetoothTreadmillService.LocalBinder) service).getService();
             if (GVariable.bluetoothLeService.initialize()) {
                 GVariable.bluetoothLeService.connect(GVariable.treadmillDevice);
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+
+                        LauncherActivity11.this.startActivity(new Intent(LauncherActivity11.this, PlayActivity.class));
+
+
+                    }
+                }, 2000);
                 return;
             }
         }
@@ -41,26 +51,6 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
         }
     };
 
-    /* renamed from: com.hankang.phone.treadmill.activity.LauncherActivity11$3 */
-    class C01583 implements Runnable {
-        C01583() {
-        }
-
-        public void run() {
-            LauncherActivity11.this.startActivity(new Intent(LauncherActivity11.this, PlayActivity.class));
-        }
-    }
-
-    /* renamed from: com.hankang.phone.treadmill.activity.LauncherActivity11$4 */
-    class C01594 implements Runnable {
-        C01594() {
-        }
-
-        public void run() {
-            LauncherActivity11.this.initTreadmillBlueTooth();
-            LauncherActivity11.this.registerBTReceiver();
-        }
-    }
 
     /* renamed from: com.hankang.phone.treadmill.activity.LauncherActivity11$5 */
     class C01605 implements Runnable {
@@ -102,25 +92,6 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
         }
     }
 
-    /* renamed from: com.hankang.phone.treadmill.activity.LauncherActivity11$6 */
-    class C03606 implements ScanTreadmillDevice.SearchListener {
-        C03606() {
-        }
-
-        public void setStatus(String status) {
-            LogUtil.m296w(LauncherActivity11.TAG, "scanBleDevice", status);
-        }
-
-        public void setAddress(String address) {
-            LogUtil.m296w(LauncherActivity11.TAG, "scanBleDevice", "连接蓝牙：" + address);
-            GVariable.treadmillDevice = address;
-            if (GVariable.bluetoothLeService != null) {
-                GVariable.bluetoothLeService.connect(GVariable.treadmillDevice);
-            } else {
-                LauncherActivity11.this.initBleService();
-            }
-        }
-    }
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -130,15 +101,27 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
         imageView.setImageResource(R.drawable.launcher_image1);
         ((ImageView) findViewById(R.id.launcher_imagee)).setOnClickListener(this);
         this.handler = new Handler();
-        this.runnableer = new C01583();
-        this.handler.postDelayed(this.runnableer, 3000);
-        new Handler().postDelayed(new C01594(), 1000);
+
+        // this.runnableer = new C01583();
+
+        //  this.handler.postDelayed(this.runnableer, 3000);
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                LauncherActivity11.this.initTreadmillBlueTooth();
+                LauncherActivity11.this.registerBTReceiver();
+            }
+        }, 1000);
     }
 
     protected void onDestroy() {
-        this.handler.removeCallbacks(this.runnableer);
+        //   this.handler.removeCallbacks(this.runnableer);
+
         GVariable.activityList.remove(this);
+
         unregisterBTReceiver();
+
         super.onDestroy();
     }
 
@@ -160,6 +143,8 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
             Toast.makeText(this, R.string.supportble, Toast.LENGTH_LONG).show();
             finish();
         }
+
+
         this.mBluetoothAdapter = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter();
             String device = PreferenceUtil.getString(this, PreferenceUtil.KEY_DEVICE_TREADMILL, "");
             LogUtil.m296w(TAG, "initTreadmillBlueTooth", "device=" + device);
@@ -173,8 +158,25 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
     }
 
     private void scanBleDevice() {
-        LogUtil.m294i(TAG, "scanBleDevice", "scanBleDevice()");
-        ScanTreadmillDevice scanTreadmillDevice = new ScanTreadmillDevice(this, new C03606());
+
+        new ScanTreadmillDevice(this, new ScanTreadmillDevice.SearchListener() {
+            @Override
+            public void setAddress(String address) {
+                LogUtil.m296w(LauncherActivity11.TAG, "scanBleDevice", "连接蓝牙：" + address);
+                GVariable.treadmillDevice = address;
+                if (GVariable.bluetoothLeService != null) {
+                    GVariable.bluetoothLeService.connect(GVariable.treadmillDevice);
+                } else {
+                    initBleService();
+                }
+            }
+
+            @Override
+            public void setStatus(String str) {
+
+            }
+        });
+
     }
 
     private void initBleService() {
@@ -183,12 +185,8 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
 
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.launcher_imagee:
-                this.handler.removeCallbacks(this.runnableer);
-                startActivity(new Intent(this, PlayActivity.class));
-                return;
-            default:
-                return;
+
+
         }
     }
 }
