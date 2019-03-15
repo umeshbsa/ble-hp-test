@@ -38,13 +38,15 @@ public class LauncherActivity11 extends Activity {
         new ScanTreadmillDevice(this, new ScanTreadmillDevice.SearchListener() {
             @Override
             public void setAddress(String address) {
-                LogUtil.m296w(LauncherActivity11.TAG, "scanBleDevice", "连接蓝牙：" + address);
+
                 GVariable.treadmillDevice = address;
+                /*   LogUtil.m296w(LauncherActivity11.TAG, "scanBleDevice", "连接蓝牙：" + address);
+
                 if (GVariable.bluetoothLeService != null) {
                     GVariable.bluetoothLeService.connect(GVariable.treadmillDevice);
-                } else {
+                } else {*/
                     initBleService();
-                }
+                // }
             }
 
             @Override
@@ -85,6 +87,8 @@ public class LauncherActivity11 extends Activity {
 
     protected void onDestroy() {
         GVariable.activityList.remove(this);
+        unbindService(mServiceConnection);
+        mServiceConnection = null;
         super.onDestroy();
     }
 }
