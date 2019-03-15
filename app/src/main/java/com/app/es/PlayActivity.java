@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -26,12 +25,6 @@ import android.widget.Toast;
 
 import com.hankang.phone.treadmill.R;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Timer;
 
@@ -187,7 +180,6 @@ public class PlayActivity extends Activity implements OnClickListener {
 
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             if (!isChecked) {
-                PlayActivity.this.uploadData(RefreshDataTask.mCountSecond / 60, (int) GVariable.distance, GVariable.getCalorie());
                 GVariable.isStart = false;
                 GVariable.calorie = 0;
                 GVariable.distance = 0.0f;
@@ -486,16 +478,24 @@ public class PlayActivity extends Activity implements OnClickListener {
         }
     };
 
+
+    // call from BLEUtils
     BroadcastReceiver commandSpeedSlopeReceiver = new BroadcastReceiver() {
 
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (BleUtil.ACTION_RECEIVE_SPEED.equals(action)) {
+
                 PlayActivity.this.setBigSpeedSlope(true, GVariable.getSpeed());
+
             } else if (BleUtil.ACTION_RECEIVE_SLOPE.equals(action)) {
+
                 PlayActivity.this.setBigSpeedSlope(false, String.valueOf(GVariable.gradient));
+
             } else if (BleUtil.ACTION_START_SWITCH.equals(action)) {
+
                 PlayActivity.this.button_switch.setChecked(GVariable.isStart);
+
                 if (GVariable.faultCode != 0) {
                     new FaultDialog(PlayActivity.this, GVariable.faultCode, new FaultDialog.ClickListener() {
                         @Override
@@ -505,22 +505,18 @@ public class PlayActivity extends Activity implements OnClickListener {
                         }
                     }).show();
                 }
+
             }
         }
     };
 
-    /* renamed from: com.hankang.phone.treadmill.activity.PlayActivity$8 */
     BroadcastReceiver refreshDataReceiver = new BroadcastReceiver() {
 
         public void onReceive(Context context, Intent intent) {
 
-
             String action = intent.getAction();
-            Log.i("TTTTTTTTTTTTT", "Call Play " + action);
-
 
             if (RefreshDataTask.ACTION_BASE_DATA.equals(action)) {
-
 
                 PlayActivity.this.text_time_minute.setText(intent.getStringExtra("minute"));
                 PlayActivity.this.text_time_second.setText(intent.getStringExtra("second"));
@@ -645,24 +641,7 @@ public class PlayActivity extends Activity implements OnClickListener {
                 RefreshDataTask.mCountSecond = 0;
                 finish();
                 return;
-          /*  case R.id.btn_sence:
-                startActivity(new Intent(this, SceneSelectActivity.class));
-                return;*/
-           /* case R.id.btn_internet:
-                intent = new Intent(this, MediaPlayActivity.class);
-                intent.putExtra("startMode", 3);
-                startActivity(intent);
-                return;*/
-           /* case R.id.btn_music:
-                intent = new Intent(this, MediaPlayActivity.class);
-                intent.putExtra("startMode", 2);
-                startActivity(intent);
-                return;*/
-          /*  case R.id.btn_video:
-                intent = new Intent(this, MediaPlayActivity.class);
-                intent.putExtra("startMode", 1);
-                startActivity(intent);
-                return;*/
+
             case R.id.gradient_add:
                 if (this.haveLongClick) {
                     stopOperationHandler();
@@ -763,75 +742,6 @@ public class PlayActivity extends Activity implements OnClickListener {
         super.onBackPressed();
     }
 
-    private String getHeatDestription(int heat) {
-        if (heat <= 0) {
-            return "";
-        }
-        String destription = "";
-        try {
-            InputStream is = getAssets().open("speach_description.txt");
-            byte[] buffer = new byte[is.available()];
-            is.read(buffer);
-            is.close();
-            JSONArray result = new JSONObject(new String(buffer, "UTF-8")).optJSONArray("result");
-            LogUtil.m294i(TAG, "getHeatDestription", "result" + result.toString());
-            for (int i = 0; i < result.length(); i++) {
-                JSONObject speach = result.optJSONObject(i);
-                String sound = speach.optString("sound");
-                if (Integer.parseInt(speach.optString("calorie")) <= heat) {
-                    return "相当于" + sound.trim() + "的热量";
-                }
-            }
-            return destription;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (JSONException e2) {
-            e2.printStackTrace();
-            return destription;
-        }
-    }
-
-    private void uploadData(int time, int distance, int calorie) {
-        /*if (!GVariable.isUpload) {
-            GVariable.isUpload = true;
-            new Handler().postDelayed(new Runnable() {
-                public void run() {
-                    GVariable.isUpload = false;
-                }
-            }, 5000);
-            if (GVariable.currentMember != null && time != 0 && distance != 0 && calorie != 0) {
-                String channelId = getIntent().getStringExtra("id");
-                RequestParams params = new RequestParams();
-                params.put("requestId", HkApplication.application.getAppId());
-                params.put("msgToken", GVariable.currentMember.getId());
-                params.put(C0126c.f288b, "record");
-                params.put("channelId", channelId);
-                params.put(C0126c.f298l, time);
-                params.put("distance", distance);
-                params.put("calorie", calorie);
-                params.put("language", "en");
-                HttpUtil.get(Urls.address, params, new JsonHttpResponseHandler() {
-                    public void setRequestURI(URI requestURI) {
-                        LogUtil.m294i(PlayActivity.TAG, "uploadData/setRequestURI", requestURI.toString());
-                    }
-
-                    public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                        LogUtil.m294i(PlayActivity.TAG, "uploadData/onSuccess", "statusCode=" + statusCode);
-                        LogUtil.m294i(PlayActivity.TAG, "uploadData/onSuccess", response.toString());
-                        JSONObject result = response.optJSONObject("result");
-                        String error = response.optString("error");
-                        if (!TextUtils.isEmpty(error) && error.equals("null")) {
-                        }
-                    }
-
-                    public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
-                        LogUtil.m294i(PlayActivity.TAG, "uploadData/onFailure", "statusCode=" + statusCode);
-                    }
-                });
-            }
-        }*/
-    }
-
     protected void onResume() {
         super.onResume();
         if (GVariable.isStart != this.button_switch.isChecked()) {
@@ -846,7 +756,6 @@ public class PlayActivity extends Activity implements OnClickListener {
     }
 
     private void setConnectState() {
-        Log.i(TAG, "setConnectState=" + GVariable.isConnected);
         if (GVariable.isConnected) {
             this.treadmill_connecting.setVisibility(8);
             this.treadmill_connected.setVisibility(0);

@@ -71,7 +71,7 @@ public class LauncherActivity11 extends Activity {
                     @Override
                     public void run() {
 
-                        LauncherActivity11.this.startActivity(new Intent(LauncherActivity11.this, PlayActivity.class));
+                     startActivity(new Intent(LauncherActivity11.this, PlayActivity.class));
 
 
                     }
@@ -87,8 +87,8 @@ public class LauncherActivity11 extends Activity {
 
     protected void onDestroy() {
         GVariable.activityList.remove(this);
-        unbindService(mServiceConnection);
-        mServiceConnection = null;
+      //  unbindService(mServiceConnection);
+       // mServiceConnection = null;
         super.onDestroy();
     }
 }
