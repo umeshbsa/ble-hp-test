@@ -22,10 +22,17 @@ import com.hankang.phone.treadmill.R;
 
 public class LauncherActivity11 extends Activity implements OnClickListener {
     private static final String TAG = "LauncherActivity11";
-    private BTBroadcastReceiver mBTReceiver;
-    private BluetoothAdapter mBluetoothAdapter;
 
-    ServiceConnection mServiceConnection = new ServiceConnection() {
+
+
+
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        GVariable.activityList.add(this);
+        setContentView(R.layout.launcher_activity);
+
+        initTreadmillBlueTooth();
+    } ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             GVariable.bluetoothLeService = ((BluetoothTreadmillService.LocalBinder) service).getService();
             if (GVariable.bluetoothLeService.initialize()) {
@@ -49,92 +56,21 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
     };
 
 
-    /* renamed from: com.hankang.phone.treadmill.activity.LauncherActivity11$5 */
-    class C01605 implements Runnable {
-        C01605() {
-        }
-
-        public void run() {
-            LauncherActivity11.this.mBluetoothAdapter.enable();
-        }
-    }
-
-    private class BTBroadcastReceiver extends BroadcastReceiver {
-        private BTBroadcastReceiver() {
-        }
-
-        public void onReceive(Context context, Intent intent) {
-            if (!intent.getAction().equals("android.bluetooth.adapter.action.STATE_CHANGED")) {
-                return;
-            }
-            if (intent.getIntExtra("android.bluetooth.adapter.extra.STATE", -1) == 12) {
-                LogUtil.m293e(LauncherActivity11.TAG, "BTBroadcastReceiver", "蓝牙打开");
-                String device = PreferenceUtil.getString(LauncherActivity11.this, PreferenceUtil.KEY_DEVICE_TREADMILL, "");
-                if (!TextUtils.isEmpty(device)) {
-                    GVariable.treadmillDevice = device;
-                }
-                if (TextUtils.isEmpty(GVariable.treadmillDevice)) {
-                    LauncherActivity11.this.scanBleDevice();
-                } else if (GVariable.bluetoothLeService != null) {
-                    GVariable.bluetoothLeService.connect(GVariable.treadmillDevice);
-                } else {
-                    LauncherActivity11.this.initBleService();
-                }
-            } else if (intent.getIntExtra("android.bluetooth.adapter.extra.STATE", -1) == 10) {
-                LogUtil.m293e(LauncherActivity11.TAG, "BTBroadcastReceiver", "蓝牙关闭");
-                GVariable.isConnected = false;
-                GVariable.isStart = false;
-                context.sendBroadcast(new Intent(BleUtil.ACTION_TREADMILL_DISCONNECTED));
-            }
-        }
-    }
-
-
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        GVariable.activityList.add(this);
-        setContentView(R.layout.launcher_activity);
-
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                LauncherActivity11.this.initTreadmillBlueTooth();
-                LauncherActivity11.this.registerBTReceiver();
-            }
-        }, 1000);
-    }
-
     protected void onDestroy() {
-        //   this.handler.removeCallbacks(this.runnableer);
-
         GVariable.activityList.remove(this);
-
-        unregisterBTReceiver();
-
         super.onDestroy();
     }
 
-    private void registerBTReceiver() {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction("android.bluetooth.adapter.action.STATE_CHANGED");
-        this.mBTReceiver = new BTBroadcastReceiver();
-        getApplicationContext().registerReceiver(this.mBTReceiver, filter);
-    }
-
-    private void unregisterBTReceiver() {
-        if (this.mBTReceiver != null) {
-            getApplication().unregisterReceiver(this.mBTReceiver);
-        }
-    }
 
     private void initTreadmillBlueTooth() {
         if (!getPackageManager().hasSystemFeature("android.hardware.bluetooth_le")) {
             Toast.makeText(this, R.string.supportble, Toast.LENGTH_LONG).show();
-            finish();
+           // finish();
         }
 
-
-        this.mBluetoothAdapter = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter();
+        scanBleDevice();
+      /*
+        BluetoothAdapter mBluetoothAdapter = ((BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE)).getAdapter();
             String device = PreferenceUtil.getString(this, PreferenceUtil.KEY_DEVICE_TREADMILL, "");
             LogUtil.m296w(TAG, "initTreadmillBlueTooth", "device=" + device);
             if (TextUtils.isEmpty(device)) {
@@ -143,7 +79,7 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
             }
             GVariable.treadmillDevice = device;
             initBleService();
-        new Handler().post(new C01605());
+        */
     }
 
     private void scanBleDevice() {
