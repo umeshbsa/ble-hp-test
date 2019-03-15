@@ -16,17 +16,14 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.hankang.phone.treadmill.R;
 
 public class LauncherActivity11 extends Activity implements OnClickListener {
     private static final String TAG = "LauncherActivity11";
-    private Handler handler;
     private BTBroadcastReceiver mBTReceiver;
     private BluetoothAdapter mBluetoothAdapter;
-    // private Runnable runnableer;
 
     ServiceConnection mServiceConnection = new ServiceConnection() {
         public void onServiceConnected(ComponentName componentName, IBinder service) {
@@ -97,14 +94,6 @@ public class LauncherActivity11 extends Activity implements OnClickListener {
         super.onCreate(savedInstanceState);
         GVariable.activityList.add(this);
         setContentView(R.layout.launcher_activity);
-        final ImageView imageView = (ImageView) findViewById(R.id.launcher_image);
-        imageView.setImageResource(R.drawable.launcher_image1);
-        ((ImageView) findViewById(R.id.launcher_imagee)).setOnClickListener(this);
-        this.handler = new Handler();
-
-        // this.runnableer = new C01583();
-
-        //  this.handler.postDelayed(this.runnableer, 3000);
 
         new Handler().postDelayed(new Runnable() {
             @Override
